@@ -1,4 +1,5 @@
 import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/home/Hero";
 
 export default function Home() {
   return (
@@ -6,7 +7,7 @@ export default function Home() {
       <Navbar />
 
       <main>
-        <h1>Beauty Store</h1>
+        <Hero />
       </main>
     </>
   );
