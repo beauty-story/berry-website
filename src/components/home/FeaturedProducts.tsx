@@ -1,7 +1,35 @@
 import ProductCard from "@/components/product/ProductCard";
-import { products } from "@/data/products";
+import { createClient } from "@/lib/supabase/server";
 
-export default function FeaturedProducts() {
+export default async function FeaturedProducts() {
+  const supabase = await createClient();
+
+  const { data: products, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      slug,
+      short_description,
+      price,
+      image_url,
+      size,
+      stock
+    `)
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error("Products error:", error.message);
+
+    return (
+      <section className="py-16 text-center">
+        <p className="text-red-600">
+          Unable to load products.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -20,7 +48,14 @@ export default function FeaturedProducts() {
           {products.map((product) => (
             <ProductCard
               key={product.id}
-              {...product}
+              id={product.id}
+              name={product.name}
+              slug={product.slug}
+              shortDescription={product.short_description ?? ""}
+              price={Number(product.price)}
+              image={product.image_url ?? "/images/hero-product.jpg"}
+              size={product.size ?? ""}
+              stock={product.stock}
             />
           ))}
         </div>

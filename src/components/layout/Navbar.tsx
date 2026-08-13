@@ -2,15 +2,52 @@
 
 import Link from "next/link";
 import { Menu, ShoppingBag, UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { useState ,useEffect } from "react";
 import { useCart } from "@/components/cart/CartContext";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function Navbar() {
+
+  const [user, setUser] = useState<User | null>(null);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const { cartItems , openCart} = useCart();
 
   const cartCount = cartItems.reduce((total,item)=>total +item.quantity,0)
+
+  const handleSignOut = async () => { await supabase.auth.signOut(); };
+
+  const userName = user?.user_metadata?.full_name;
+
+  const firstName = userName?.split(" ")[0];
+   
+   
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setUser(user);
+    };
+
+    getUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+    }, []);
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -46,9 +83,41 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Link href="/sign-in" aria-label="Sign in">
-            <UserRound className="h-5 w-5" />
-          </Link>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/account"
+                  aria-label="My account"
+                  className="flex items-center gap-1"
+                >
+                  <UserRound className="h-5 w-5" />
+
+                  <span className="hidden text-sm sm:inline">
+                    {firstName || "Account"}
+                  </span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="hidden text-sm text-gray-500 hover:text-gray-900 sm:block"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/sign-in"
+                aria-label="Sign in"
+                className="flex items-center gap-1"
+              >
+                <UserRound className="h-5 w-5" />
+
+                <span className="hidden text-sm sm:inline">
+                  Sign In
+                </span>
+              </Link>
+            )}
 
           {/*Shoping cart icon */}
         <button

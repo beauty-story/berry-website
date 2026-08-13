@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { products } from "@/data/products";
+import { createClient } from "@/lib/supabase/server";
 import ProductPurchase from "@/components/product/ProductPurchase";
 
 type ProductPageProps = {
@@ -14,13 +14,37 @@ export default async function ProductPage({
 }: ProductPageProps) {
   const { slug } = await params;
 
-  const product = products.find(
-    (product) => product.slug === slug
-  );
+const supabase = await createClient();
 
-  if (!product) {
-    notFound();
-  }
+const { data: product, error } = await supabase
+  .from("products")
+  .select(`
+    id,
+    name,
+    slug,
+    short_description,
+    description,
+    price,
+    image_url,
+    size,
+    stock,
+    benefits,
+    ingredients,
+    how_to_use
+  `)
+  .eq("slug", slug)
+  .maybeSingle();
+
+if (error) {
+  console.error("Product error:", error.message);
+  notFound();
+}
+
+if (!product) {
+  notFound();
+}
+
+
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -29,7 +53,7 @@ export default async function ProductPage({
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <Image
-            src={product.image}
+            src={product.image_url??"/images/hero-product.jpg"}
             alt={product.name}
             fill
             priority
@@ -52,7 +76,7 @@ export default async function ProductPage({
           </p>
 
           <p className="mt-5 text-lg leading-8 text-gray-600">
-            {product.shortDescription}
+            {product.short_description}
           </p>
 
           <p className="mt-6 text-2xl font-semibold text-gray-900">
@@ -68,8 +92,8 @@ export default async function ProductPage({
           name={product.name}
           slug={product.slug}
           price={product.price}
-          image={product.image}
-          size={product.size}
+          image={product.image_url??"images/hero-product.jpg"}
+          size={product.size??""}
           stock={product.stock}
         />
           
@@ -119,7 +143,7 @@ export default async function ProductPage({
             </h2>
 
             <div className="mt-8 space-y-5">
-                {product.howToUse.map((step, index) => (
+                {product.how_to_use.map((step, index) => (
                 <div
                     key={step}
                     className="flex gap-4"
