@@ -12,6 +12,7 @@ const supabase = createClient();
 export default function Navbar() {
 
   const [user, setUser] = useState<User | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -49,6 +50,31 @@ export default function Navbar() {
     };
     }, []);
 
+useEffect(() => {
+  const checkAdminRole = async () => {
+    if (!user) {
+      setIsAdminUser(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Role error:", error.message);
+      setIsAdminUser(false);
+      return;
+    }
+
+    setIsAdminUser(data?.role === "admin");
+  };
+
+  checkAdminRole();
+}, [user]);
+
   return (
     <header className="border-b border-gray-200 bg-white">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -85,6 +111,16 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
+
+                {isAdminUser && (
+                  <Link
+                    href="/admin"
+                    className="text-sm font-medium text-gray-900 hover:text-gray-500"
+                  >
+                    Admin
+                  </Link>
+                )}
+
                 <Link
                   href="/account"
                   aria-label="My account"

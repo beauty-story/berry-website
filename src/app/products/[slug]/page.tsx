@@ -33,6 +33,7 @@ const { data: product, error } = await supabase
     how_to_use
   `)
   .eq("slug", slug)
+  .eq("active",true)
   .maybeSingle();
 
 if (error) {

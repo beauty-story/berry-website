@@ -16,6 +16,7 @@ export default async function FeaturedProducts() {
       size,
       stock
     `)
+    .eq("active",true)
     .order("id", { ascending: true });
 
   if (error) {
