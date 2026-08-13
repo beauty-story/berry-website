@@ -63,7 +63,15 @@ export default async function ProductPage({
             {product.stock > 0 ? "In Stock" : "Out of Stock"}
           </p>
         
-          <ProductPurchase stock={product.stock} />
+          <ProductPurchase
+          id={product.id}
+          name={product.name}
+          slug={product.slug}
+          price={product.price}
+          image={product.image}
+          size={product.size}
+          stock={product.stock}
+        />
           
         </div>
               </div>

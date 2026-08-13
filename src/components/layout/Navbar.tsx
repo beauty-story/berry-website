@@ -3,9 +3,14 @@
 import Link from "next/link";
 import { Menu, ShoppingBag, UserRound, X } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/components/cart/CartContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { cartItems , openCart} = useCart();
+
+  const cartCount = cartItems.reduce((total,item)=>total +item.quantity,0)
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -45,9 +50,21 @@ export default function Navbar() {
             <UserRound className="h-5 w-5" />
           </Link>
 
-          <Link href="/cart" aria-label="Shopping cart">
-            <ShoppingBag className="h-5 w-5" />
-          </Link>
+          {/*Shoping cart icon */}
+        <button
+          type="button"
+          onClick={openCart}
+          aria-label="Open shopping cart"
+          className="relative"
+        >
+          <ShoppingBag className="h-5 w-5" />
+
+          {cartCount > 0 && (
+            <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-900 px-1 text-[10px] font-medium text-white">
+              {cartCount}
+            </span>
+          )}
+        </button>
         </div>
       </nav>
 
