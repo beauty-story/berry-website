@@ -28,6 +28,7 @@ type CartContextType = {
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(
@@ -50,6 +51,11 @@ export function CartProvider({
 const closeCart = () => {
   setIsCartOpen(false);
 };
+
+const clearCart = () => {
+  setCartItems([]);
+};
+
   
   useEffect(() => {
   const savedCart = localStorage.getItem("beauty-store-cart");
@@ -133,6 +139,7 @@ const closeCart = () => {
     addToCart,
     updateQuantity,
     removeFromCart,
+    clearCart,
     isCartOpen,
     openCart,
     closeCart,

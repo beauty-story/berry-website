@@ -4,11 +4,102 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { createOrder } from "@/app/checkout/actions";
+import { createOrder,verifyPayment, } from "@/app/checkout/actions";
 import { useCart } from "@/components/cart/CartContext";
+import { useRouter } from "next/navigation";
+
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const existingScript =
+      document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+      );
+
+    if (existingScript) {
+      existingScript.addEventListener(
+        "load",
+        () => resolve(true)
+      );
+
+      existingScript.addEventListener(
+        "error",
+        () => resolve(false)
+      );
+
+      return;
+    }
+
+    const script =
+      document.createElement("script");
+
+    script.src =
+      "https://checkout.razorpay.com/v1/checkout.js";
+
+    script.async = true;
+
+    script.onload = () =>
+      resolve(true);
+
+    script.onerror = () =>
+      resolve(false);
+
+    document.body.appendChild(script);
+  });
+}
+
+type RazorpayResponse = {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+
+  prefill?: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+
+  handler: (response: RazorpayResponse) => void;
+
+  modal?: {
+    ondismiss?: () => void;
+  };
+
+  theme?: {
+    color?: string;
+  };
+};
+
+type RazorpayInstance = {
+  open: () => void;
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (
+      options: RazorpayOptions
+    ) => RazorpayInstance;
+  }
+}
 
 export default function CheckoutPage() {
-  const { cartItems } = useCart();
+
+  const router = useRouter();
+  const { cartItems,clearCart } = useCart();
 
   const [isCreatingOrder, setIsCreatingOrder] =
     useState(false);
@@ -148,19 +239,133 @@ export default function CheckoutPage() {
           })),
         });
 
-        if (!result.success) {
-          setCheckoutError(result.error);
-          return;
-        }
+if (!result.success) {
+  setCheckoutError(result.error);
+  return;
+}
 
-        setCreatedOrderId(
-          result.orderId
-        );
+setCreatedOrderId(result.orderId);
 
-        console.log(
-          "Order created:",
-          result
-        );
+const scriptLoaded =
+  await loadRazorpayScript();
+
+if (!scriptLoaded) {
+  setCheckoutError(
+    "Unable to load Razorpay. Please check your internet connection."
+  );
+
+  return;
+}
+
+const razorpayKey =
+  process.env
+    .NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+if (!razorpayKey) {
+  setCheckoutError(
+    "Razorpay key is not configured."
+  );
+
+  return;
+}
+
+if (!window.Razorpay) {
+  setCheckoutError(
+    "Razorpay Checkout is unavailable."
+  );
+
+  return;
+}
+
+const options: RazorpayOptions = {
+  key: razorpayKey,
+
+  amount: result.amountPaise,
+
+  currency: "INR",
+
+  name: "Berry Organics",
+
+  description:
+    `Payment for Order #${result.orderId}`,
+
+  order_id:
+    result.razorpayOrderId,
+
+  prefill: {
+    name:
+      formData.fullName,
+
+    email:
+      formData.email,
+
+    contact:
+      formData.phone,
+  },
+
+
+handler: async (
+  response: RazorpayResponse
+) => {
+  console.log(
+    "Payment received. Verifying..."
+  );
+
+  const verification =
+    await verifyPayment({
+      localOrderId:
+        result.orderId,
+
+      razorpayPaymentId:
+        response.razorpay_payment_id,
+
+      razorpayOrderId:
+        response.razorpay_order_id,
+
+      razorpaySignature:
+        response.razorpay_signature,
+    });
+
+if (!verification.success) {
+  setCheckoutError(
+    verification.error
+  );
+
+  return;
+}
+
+/*
+ * Payment is now:
+ *
+ * ✓ signature verified
+ * ✓ stock reduced
+ * ✓ order marked paid
+ */
+
+clearCart();
+
+router.push(
+  `/order-success?orderId=${result.orderId}`
+);
+
+},
+  modal: {
+    ondismiss: () => {
+      console.log(
+        "Razorpay payment window closed."
+      );
+    },
+  },
+};
+
+const razorpay =
+  new window.Razorpay(options);
+
+razorpay.open();
+
+
+
+
       } catch (error) {
         console.error(
           "Checkout error:",
