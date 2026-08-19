@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/app/account/ProfileForm";
+import Link from "next/link";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -46,8 +47,14 @@ export default async function AccountPage() {
           Manage your account and orders.
         </p>
       </div>
+      <Link
+        href="/account/orders"
+        className="mt-6 bg-gray-900 hover:bg-gray-700 text-white inline-block border disabled:opacity-50 border-gray-900 px-5 py-3 text-sm font-medium">
+        My Orders
+      </Link>
+      {/* bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50 */}
 
-      <section className="mt-10 border border-gray-200 p-6">
+      <section className="mt-5 border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900">
           Account Information
         </h2>
@@ -87,15 +94,11 @@ export default async function AccountPage() {
         </div>
       </section>
 
-      <section className="mt-8 border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900">
-          My Orders
-        </h2>
 
-        <p className="mt-4 text-sm text-gray-500">
-          You have no orders yet.
-        </p>
-      </section>
+
+
+
+
     </main>
   );
 }

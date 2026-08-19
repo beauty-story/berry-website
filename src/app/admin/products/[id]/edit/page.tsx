@@ -216,13 +216,27 @@ export default async function EditProductPage({
                 Image URL
               </label>
 
-              <input
-                id="imageUrl"
-                name="imageUrl"
-                type="text"
-                defaultValue={product.image_url ?? ""}
-                className="mt-2 w-full border border-gray-300 px-4 py-3"
-              />
+              <div>
+                <label
+                  htmlFor="image"
+                  className="text-sm font-medium"
+                >
+                  Replace Product Image
+                </label>
+
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="mt-2 block w-full border border-gray-300 px-4 py-3 text-sm"
+                />
+
+                <p className="mt-2 text-xs text-gray-500">
+                  Leave empty to keep the current image.
+                  JPG, PNG or WebP. Maximum 5 MB.
+                </p>
+              </div>
             </div>
           </div>
         </section>

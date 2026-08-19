@@ -157,14 +157,29 @@ export default async function NewProductPage() {
               >
                 Image URL
               </label>
+        <div>
+          <label
+            htmlFor="image"
+            className="text-sm font-medium"
+          >
+            Product Image
+          </label>
 
-              <input
-                id="imageUrl"
-                name="imageUrl"
-                type="text"
-                placeholder="/images/product-6.jpg"
-                className="mt-2 w-full border border-gray-300 px-4 py-3 outline-none focus:border-gray-900"
-              />
+          <input
+            id="image"
+            name="image"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            required
+            className="mt-2 block w-full border border-gray-300 px-4 py-3 text-sm"
+          />
+
+          <p className="mt-2 text-xs text-gray-500">
+            JPG, PNG or WebP. Maximum 3 MB.
+          </p>
+        </div>
+
+ 
             </div>
           </div>
         </section>
