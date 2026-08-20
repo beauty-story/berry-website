@@ -107,7 +107,7 @@ if (!product) {
             </h2>
 
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
-                {product.benefits.map((benefit) => (
+                {product.benefits.map((benefit:string) => (
                 <div
                     key={benefit}
                     className="border border-gray-200 p-6"
@@ -124,7 +124,7 @@ if (!product) {
             </h2>
 
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
-                {product.ingredients.map((ingredient) => (
+                {product.ingredients.map((ingredient:string) => (
                 <div
                     key={ingredient}
                     className="bg-[#faf9f7] p-6"
@@ -144,7 +144,7 @@ if (!product) {
             </h2>
 
             <div className="mt-8 space-y-5">
-                {product.how_to_use.map((step, index) => (
+                {product.how_to_use.map((step:string, index:number) => (
                 <div
                     key={step}
                     className="flex gap-4"
